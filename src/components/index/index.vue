@@ -52,6 +52,8 @@
 <script>
   // 引用请求后台数据的公共方法
   import api from '../../api/index'
+  // 封装的微信分享函数
+  import wx from 'weixin-js-sdk'
 
   export default {
     name: 'home',
@@ -59,7 +61,7 @@
     data() {
       return {
         // 广告位置
-        ShareStateS:false,
+        ShareStateS: false,
         // 查看详情
         Message: false,
         // 详情状态
@@ -295,10 +297,132 @@
         _this.$router.push({
           name: 'indexList'
         })
+      },
+      //ssss
+      share() {
+        console.log('123')
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+        // 重定向this值
+        let _this = this;
+        // 传参集合
+        let param = {};
+        // 请求接口的后缀
+        let url = '';
+        // 传参值
+        // let purl = "https://opex.kkstudy.cn/index?code=" + _this.ReqCode + '&referCode=' + _this.referCode + '&userid=' + _this.UrlUserId + '&userCode=' + _this.userCode;
+        // let purl_1 = window.location.href.split('#')[0]
+        if (isAndroid) {
+          // 安卓端
+          var purl_1 = window.location.href
+        }
+        if (isiOS) {
+          // ios端
+          var purl_1 = window.initUrl
+        }
+        let purl = encodeURIComponent(purl_1)
+        param["url"] = purl;
+        // alert(purl)
+        console.log(param)
+        api.httpGetSh(param, function (data) {
+          // 返回的值
+          console.log('分享请求测试')
+          console.log(data);
+          // 为点击域减去添加的class
+          _this.wxInit(data);
+        }, url);
+      },
+      //微信分享使用方法
+      wxInit(sd) {
+        // 获取shareImgLink存入data
+        this.shareImgLink = localStorage.getItem('shareImgLink');
+        // 获取title存入data
+        this.title = localStorage.getItem('title');
+        // 获取subtitle存入data
+        this.subtitle = localStorage.getItem('subtitle');
+        console.log(this.title)
+        let _this = this
+        var host = this.getDomain();
+        let links = host + '?code=' + _this.ReqCode + '&referCode=' + _this.userCode;  //分享出去的链接
+        let title = this.title;  //分享的标题
+        let desc = this.subtitle; //分享的详情介绍
+        let imgUrl = this.shareImgLink;
+        // let imgUrl = 'http://img3.imgtn.bdimg.com/it/u=2381661931,653570174&fm=26&gp=0.jpg'
+        console.log(imgUrl)
+        wx.config({
+          debug: false,
+          appId: process.env.WECHAT_APPID,
+          timestamp: sd.data.timestamp,
+          nonceStr: sd.data.nonceStr,
+          signature: sd.data.signature,
+          jsApiList: [
+            'checkJsApi', 'updateAppMessageShareData', 'updateTimelineShareData', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone'
+          ]
+        });
+        wx.ready(function () {
+          wx.onMenuShareTimeline({
+            title: title, // 分享标题
+            desc: desc, // 分享描述
+            link: links, // 分享链接
+            imgUrl: imgUrl, // 分享图标
+            success: function () {
+            },
+            cancel: function () {
+
+            }
+          });
+
+          //微信分享菜单测试
+          wx.onMenuShareAppMessage({
+            title: title, // 分享标题
+            desc: desc, // 分享描述
+            link: links, // 分享链接
+            imgUrl: imgUrl, // 分享图标
+            success: function () {
+            },
+            cancel: function () {
+
+            }
+          });
+          wx.updateTimelineShareData({
+            title: title, // 分享标题
+            link: links, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            imgUrl: imgUrl, // 分享图标
+            success: function () {
+              // 设置成功
+            },
+            cancel: function () {
+
+            }
+          });
+          wx.updateAppMessageShareData({
+            title: title, // 分享标题
+            desc: desc,
+            link: links, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            imgUrl: imgUrl, // 分享图标
+            success: function () {
+              // 设置成功
+            },
+            cancel: function () {
+            }
+          });
+        });
+        wx.error(function (res) {
+          // _this.ShCallBackState = true
+          // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+        });
+      },
+      getDomain() {
+        var protocal = document.location.protocol;
+        var host = document.location.host;
+        return protocal + "//" + host
       }
+
     },
     mounted() {
       !window.initUrl && (window.initUrl = window.location.href)
+      this.share();
     }
   }
 </script>
@@ -365,7 +489,7 @@
   }
 
   /*红包所属人头像*/
-  .detTopImg{
+  .detTopImg {
     width: 50px;
     height: 50px;
     border-radius: 10px;
@@ -467,6 +591,7 @@
       -webkit-transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) translateZ(0px);
     }
   }
+
   .ShareTS {
     display: flex;
     flex-direction: column;
@@ -484,41 +609,48 @@
     background: #FF5A47;
 
   }
+
   .ShareTS p {
     top: 40px;
     position: absolute;
     opacity: 1;
     font-size: 12px;
-    color: rgba(255,239,198,1);
+    color: rgba(255, 239, 198, 1);
     line-height: 20px;
     letter-spacing: 0px;
   }
+
   .ShareFS {
     display: none;
   }
-  .GGTop{
+
+  .GGTop {
     position: absolute;
     top: 0px;
     width: 98%;
   }
-  .GGImg{
+
+  .GGImg {
     position: absolute;
     width: 75%;
-    top:80px;
-    box-shadow: 0 15px 20px -10px rgba(0,0,0,0.20);
+    top: 80px;
+    box-shadow: 0 15px 20px -10px rgba(0, 0, 0, 0.20);
     height: auto;
   }
-  .GGGif{
+
+  .GGGif {
     position: absolute;
     width: 100px;
-    top:60px;
+    top: 60px;
     z-index: 1000;
   }
-  .GGBottom{
+
+  .GGBottom {
     position: absolute;
     width: 100%;
     bottom: 0px;
   }
+
   /*红包已领完*/
   .Already {
     opacity: 1;

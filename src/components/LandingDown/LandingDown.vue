@@ -38,7 +38,8 @@
       <!--data-title=""></video>-->
       <div id="app">
         <div class="plyr" @click="BoFang">
-          <video preload="none" poster="../../assets/movie.png">
+          <img id="Dt_video" v-if="DtVideo" @click="BoFang" src="../../assets/DT_git.png"/>
+          <video preload="none" poster="../../assets/movieLD.png" style="width: 81%; object-fit: fill" >
             <source :src="videourl" type="video/mp4" controls preload="auto">
             您的浏览器不支持 HTML5 视频,请更换浏览器。比如 Chrome 、 Firefox 等主流浏览器。
           </video>
@@ -80,6 +81,7 @@
     components: {},
     data() {
       return {
+        DtVideo:true,
         // 用户id
         userId: '',
         UserHeadPicUrl: '',
@@ -88,7 +90,7 @@
         UserLevel: '',
         Money: '',
         UserStatus: '',
-        videourl: 'http://61.133.53.18/data/cdn_transfer/99/91/9996ec06155550c94e7b02214b4c1cbefa330a91.mp4'
+        videourl: 'http://61.133.53.43/data/cdn_transfer/EC/19/ecaf6139523769057996e067ef4af26dc1a70419.mp4'
 
       }
     },
@@ -119,10 +121,13 @@
       },
       // 点击播放暂停
       BoFang() {
+        console.log('123')
         var video = document.querySelector('video');
         if (video.paused) {
+          this.DtVideo = false
           video.play();
         } else {
+          this.DtVideo = true
           video.pause()
         }
       },
@@ -188,6 +193,18 @@
 </script>
 
 <style scoped>
+  .plyr img{
+    z-index: 1000000000;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    margin-top: 8%;
+  }
+  .plyr{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .one_btn img {
     width: 20px;
     margin-left: 10px;
@@ -203,7 +220,7 @@
 
   .DownBottom video {
     width: 81%;
-    margin-left: 2.2rem;
+    /*margin-left: 2.2rem;*/
     height: 10.7rem;
     margin-top: 44px;
   }
@@ -227,7 +244,11 @@
     background: #1C1C1C url("../../assets/down_red.png");
     width: 100%;
     background-size: 100%;
-    padding: 4% 10% 20% 8%;
+    /*padding: 4% 10% 20% 8%;*/
+    padding-top:4% ;
+    padding-left: 8%;
+    /*padding-bottom:13%;*/
+    padding-right: 10%;
   }
 
   .DownCenter_one {
@@ -357,6 +378,7 @@
     letter-spacing: 0px;
     margin-top: 25%;
     padding: 6px;
+    margin-bottom: 20%;
   }
 
   .DownBottom {
@@ -364,7 +386,7 @@
     width: 100%;
     background-size: 100% 100%;
     height: 20rem;
-    margin-top: -4px;
+    margin-top: -3%;
   }
 
   /*活动规则*/
